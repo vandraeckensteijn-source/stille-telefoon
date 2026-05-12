@@ -37,25 +37,17 @@ module.exports = async function handler(req, res) {
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-
-    const stream = anthropic.messages.stream({
+    const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 500,
       system: SYSTEM_PROMPT,
       messages: claudeMessages,
     });
 
-    stream.on('text', (text) => {
-      res.write(JSON.stringify({ content: text }) + '\n');
-    });
-
-    stream.on('end', () => res.end());
-    stream.on('error', (err) => { console.error('Stream-fout:', err); res.end(); });
+    const reply = response.content[0].text;
+    res.json({ reply: reply });
   } catch (error) {
-    console.error('Chat-fout:', error);
-    res.status(500).json({ error: 'Gesprek mislukt' });
+    console.error('Chat-fout:', error.message);
+    res.status(500).json({ error: error.message });
   }
 };
