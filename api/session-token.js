@@ -16,6 +16,7 @@ module.exports = async function handler(req, res) {
           avatarId: process.env.ANAM_AVATAR_ID || '30fa96d0-26c4-4e55-94a0-517025942e18',
           voiceId: process.env.ANAM_VOICE_ID || '6bfbe25a-979d-40f3-a92b-5394170af54b',
           llmId: 'CUSTOMER_CLIENT_V1',
+          languageCode: 'nl',
         },
       }),
     });
