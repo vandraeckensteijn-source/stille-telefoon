@@ -333,8 +333,6 @@
           content: m.content,
         }));
 
-        const talkStream = anamClient.createTalkMessageStream();
-
         const response = await fetch('/api/chat-stream', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -351,27 +349,22 @@
 
         while (true) {
           const { done, value } = await reader.read();
-
-          if (done) {
-            if (talkStream.isActive()) talkStream.endMessage();
-            if (fullReply) addMessage('assistant', fullReply);
-            break;
-          }
-
+          if (done) break;
           if (value) {
             const text = decoder.decode(value);
             const lines = text.split('\n').filter(l => l.trim());
-
             for (const line of lines) {
               try {
                 const data = JSON.parse(line);
-                if (data.content && talkStream.isActive()) {
-                  talkStream.streamMessageChunk(data.content, false);
-                  fullReply += data.content;
-                }
+                if (data.content) fullReply += data.content;
               } catch (e) { /* skip */ }
             }
           }
+        }
+
+        if (fullReply && anamClient) {
+          addMessage('assistant', fullReply);
+          anamClient.talk(fullReply);
         }
       } catch (err) {
         console.error('Gespreksfout:', err);
@@ -380,7 +373,6 @@
         }
       }
     }
-
     // ---- Neem op ----
 
     window.neemOp = async function () {
