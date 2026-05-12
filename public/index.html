@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0d0907">
+  <title>De Stille Telefoon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep: #0d0907;
+      --bg-warm: #1a120d;
+      --bg-glow: #2a1f1a;
+      --gold: #c4a882;
+      --gold-dim: #8a7560;
+      --gold-faint: #5a4232;
+      --cream: #e8ddd0;
+      --cream-soft: #e0d4c4;
+      --red-dim: #6b3030;
+      --red-soft: #c07070;
+      --green-soft: #8aaa70;
+      --blue-soft: #70a0aa;
+      --font: 'Crimson Pro', Georgia, 'Times New Roman', serif;
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      background: radial-gradient(ellipse at 50% 20%, var(--bg-glow) 0%, var(--bg-warm) 40%, var(--bg-deep) 100%);
+      font-family: var(--font);
+      color: var(--cream);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ===== IDLE ===== */
+    #idle-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      animation: fadeIn 1.2s ease;
+    }
+
+    #idle-screen h1 {
+      font-size: clamp(1.4rem, 4vw, 2.4rem);
+      font-weight: 300;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.9;
+    }
+
+    .tagline {
+      font-size: clamp(0.85rem, 2.2vw, 1rem);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--gold-dim);
+      margin-top: 14px;
+      line-height: 1.7;
+    }
+
+    .pickup-btn {
+      width: clamp(110px, 28vw, 150px);
+      height: clamp(110px, 28vw, 150px);
+      border-radius: 50%;
+      border: 2px solid var(--gold-faint);
+      background: radial-gradient(circle at 38% 33%, #3d2b1e, #1a110b);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 40px;
+      transition: all 0.5s ease;
+      box-shadow: 0 0 50px rgba(180,140,80,0.06);
+    }
+
+    .pickup-btn:hover, .pickup-btn:focus {
+      border-color: #8a6840;
+      box-shadow: 0 0 70px rgba(180,140,80,0.18);
+      outline: none;
+    }
+
+    .pickup-btn svg {
+      width: clamp(36px, 9vw, 52px);
+      height: clamp(36px, 9vw, 52px);
+    }
+
+    .pickup-label {
+      margin-top: 22px;
+      font-size: 0.8rem;
+      color: var(--gold-faint);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 300;
+    }
+
+    /* ===== ACTIVE ===== */
+    #active-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      padding: 12px;
+      animation: fadeIn 0.8s ease;
+    }
+
+    #active-screen h1 {
+      font-size: 1rem;
+      font-weight: 300;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.7;
+      margin-bottom: 8px;
+      flex-shrink: 0;
+    }
+
+    .video-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      flex-shrink: 0;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+
+    #persona-video {
+      width: 100%;
+      display: block;
+      border-radius: 16px;
+      background: #000;
+    }
+
+    .video-wrap::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      box-shadow: inset 0 0 60px rgba(13,9,7,0.5);
+      pointer-events: none;
+    }
+
+    #status {
+      font-size: 0.75rem;
+      color: var(--gold-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin: 10px 0 6px;
+      font-weight: 300;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--gold-faint);
+      transition: background 0.4s, box-shadow 0.4s;
+    }
+
+    #status-dot.listening {
+      background: var(--green-soft);
+      box-shadow: 0 0 8px rgba(138,170,112,0.5);
+      animation: breathe 2.5s ease-in-out infinite;
+    }
+
+    #status-dot.speaking {
+      background: var(--blue-soft);
+      box-shadow: 0 0 8px rgba(112,160,170,0.5);
+      animation: breathe 1.8s ease-in-out infinite;
+    }
+
+    #status-dot.connecting {
+      background: var(--gold);
+      animation: pulse-dot 1.2s ease-in-out infinite;
+    }
+
+    #transcript {
+      flex: 1;
+      width: 100%;
+      max-width: 420px;
+      overflow-y: auto;
+      padding: 12px 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .msg { max-width: 90%; animation: fadeSlideIn 0.6s ease; }
+    .msg p { font-size: 0.92rem; line-height: 1.7; font-weight: 300; }
+    .msg.ai { align-self: flex-start; }
+    .msg.ai p { color: var(--cream-soft); font-style: italic; }
+    .msg.user { align-self: flex-end; }
+    .msg.user p { color: var(--gold-dim); text-align: right; }
+
+    .hangup-btn {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      color: var(--red-dim);
+      font-family: var(--font);
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 10px 20px;
+      transition: color 0.3s;
+      font-weight: 300;
+    }
+
+    .hangup-btn:hover { color: var(--red-soft); }
+
+    #error-bar {
+      display: none;
+      position: fixed;
+      bottom: 20px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(80,30,20,0.92);
+      color: #e0b0a0;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      max-width: 90%;
+      text-align: center;
+      z-index: 100;
+    }
+
+    #transcript::-webkit-scrollbar { width: 3px; }
+    #transcript::-webkit-scrollbar-track { background: transparent; }
+    #transcript::-webkit-scrollbar-thumb { background: rgba(138,117,96,0.2); border-radius: 2px; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes breathe { 0%, 100% { opacity: 0.6; transform: scale(1); } 50% { opacity: 1; transform: scale(1.25); } }
+    @keyframes pulse-dot { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+    @media (max-height: 700px) { .video-wrap { max-width: 280px; } }
+    @media (max-width: 400px) { #active-screen { padding: 8px; } .video-wrap { max-width: 100%; } }
+  </style>
+</head>
+<body>
+
+  <!-- IDLE -->
+  <div id="idle-screen">
+    <h1>De Stille Telefoon</h1>
+    <p class="tagline">Dit is geen gewone telefoon.<br>Dit is een plek voor woorden die nergens anders passen.</p>
+    <button class="pickup-btn" onclick="neemOp()" aria-label="Neem de telefoon op">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#c4a882" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+      </svg>
+    </button>
+    <p class="pickup-label">Neem op</p>
+  </div>
+
+  <!-- ACTIVE -->
+  <div id="active-screen">
+    <h1>De Stille Telefoon</h1>
+    <div class="video-wrap">
+      <video id="persona-video" autoplay playsinline></video>
+    </div>
+    <div id="status">
+      <span id="status-dot"></span>
+      <span id="status-text">Verbinden...</span>
+    </div>
+    <div id="transcript"></div>
+    <button class="hangup-btn" onclick="hangOp()">Ophangen</button>
+  </div>
+
+  <div id="error-bar"></div>
+
+  <!-- SCRIPT -->
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@anam-ai/js-sdk@latest';
+    import { AnamEvent } from 'https://esm.sh/@anam-ai/js-sdk@latest/dist/module/types';
+
+    let anamClient = null;
+
+    const idleScreen   = document.getElementById('idle-screen');
+    const activeScreen = document.getElementById('active-screen');
+    const statusDot    = document.getElementById('status-dot');
+    const statusText   = document.getElementById('status-text');
+    const transcript   = document.getElementById('transcript');
+    const errorBar     = document.getElementById('error-bar');
+
+    function setStatus(text, state) {
+      statusText.textContent = text;
+      statusDot.className = state || '';
+    }
+
+    function addMessage(role, text) {
+      const div = document.createElement('div');
+      div.className = 'msg ' + (role === 'user' ? 'user' : 'ai');
+      const p = document.createElement('p');
+      p.textContent = text;
+      div.appendChild(p);
+      transcript.appendChild(div);
+      transcript.scrollTop = transcript.scrollHeight;
+    }
+
+    function showError(msg) {
+      errorBar.textContent = msg;
+      errorBar.style.display = 'block';
+      setTimeout(() => { errorBar.style.display = 'none'; }, 5000);
+    }
+
+    // ---- Claude via Vercel API ----
+
+    async function handleUserMessage(messageHistory) {
+      if (!messageHistory.length) return;
+      const last = messageHistory[messageHistory.length - 1];
+      if (last.role !== 'user') return;
+      if (!anamClient) return;
+
+      try {
+        const messages = messageHistory.map(m => ({
+          role: m.role === 'user' ? 'user' : 'assistant',
+          content: m.content,
+        }));
+
+        const talkStream = anamClient.createTalkMessageStream();
+
+        const response = await fetch('/api/chat-stream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages }),
+        });
+
+        if (!response.ok) throw new Error('Server fout');
+
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error('Geen stream');
+
+        const decoder = new TextDecoder();
+        let fullReply = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+
+          if (done) {
+            if (talkStream.isActive()) talkStream.endMessage();
+            if (fullReply) addMessage('assistant', fullReply);
+            break;
+          }
+
+          if (value) {
+            const text = decoder.decode(value);
+            const lines = text.split('\n').filter(l => l.trim());
+
+            for (const line of lines) {
+              try {
+                const data = JSON.parse(line);
+                if (data.content && talkStream.isActive()) {
+                  talkStream.streamMessageChunk(data.content, false);
+                  fullReply += data.content;
+                }
+              } catch (e) { /* skip */ }
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Gespreksfout:', err);
+        if (anamClient) {
+          anamClient.talk('Er ging iets mis met de verbinding. Maar ik ben er nog.');
+        }
+      }
+    }
+
+    // ---- Neem op ----
+
+    window.neemOp = async function () {
+      try {
+        idleScreen.style.display = 'none';
+        activeScreen.style.display = 'flex';
+        transcript.innerHTML = '';
+        setStatus('Verbinden...', 'connecting');
+
+        const res = await fetch('/api/session-token', { method: 'POST' });
+        if (!res.ok) throw new Error('Sessie mislukt — controleer je API keys');
+
+        const { sessionToken } = await res.json();
+        setStatus('Avatar laden...', 'connecting');
+
+        anamClient = createClient(sessionToken);
+
+        anamClient.addListener(AnamEvent.SESSION_READY, () => {
+          setStatus('Luistert...', 'listening');
+          const welcome = 'U heeft de telefoon opgenomen. Neem de tijd. Ik ben hier, en ik luister.';
+          anamClient.talk(welcome);
+          addMessage('assistant', welcome);
+        });
+
+        anamClient.addListener(AnamEvent.CONNECTION_CLOSED, () => hangOp());
+
+        anamClient.addListener(AnamEvent.MESSAGE_HISTORY_UPDATED, (history) => {
+          if (history.length) {
+            const last = history[history.length - 1];
+            if (last.role === 'user') addMessage('user', last.content);
+          }
+          handleUserMessage(history);
+        });
+
+        anamClient.addListener(AnamEvent.TALK_STREAM_INTERRUPTED, () => {
+          setStatus('Luistert...', 'listening');
+        });
+
+        await anamClient.streamToVideoElement('persona-video');
+
+      } catch (err) {
+        console.error('Startfout:', err);
+        showError(err.message);
+        hangOp();
+      }
+    };
+
+    // ---- Hang op ----
+
+    window.hangOp = function () {
+      if (anamClient) {
+        try { anamClient.stopStreaming(); } catch (e) {}
+        anamClient = null;
+      }
+      const video = document.getElementById('persona-video');
+      if (video) video.srcObject = null;
+      activeScreen.style.display = 'none';
+      idleScreen.style.display = 'flex';
+    };
+
+    window.addEventListener('beforeunload', () => {
+      if (anamClient) try { anamClient.stopStreaming(); } catch (e) {}
+    });
+  </script>
+</body>
+</html>
